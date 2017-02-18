@@ -1,0 +1,32 @@
+services:
+  - stallion_srv
+  - okapi_srv
+  - ermine_srv
+  - wombat_srv
+  - warthog_srv
+  - burro_srv
+metrics:
+  counters:
+    - name: request_errors_total
+      range:
+        min: 1
+        max: 1
+    - name: request_successes_total
+      range:
+        min: 1
+        max: 1
+  timers:
+    - name: request_duration_ms
+      range:
+        min: 10
+        max: 300
+  histograms:
+    - name: request_body_bytes
+      range:
+        min: 1024
+        max: 307200
+  gauges:
+    - name: request_queue_depth
+      range:
+        min: 1
+        max: 20

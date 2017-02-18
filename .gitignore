@@ -25,8 +25,8 @@ _testmain.go
 
 bin
 _work
-/veneur-generator
-/cmd/veneur-generator/veneur-generator
+/lowed
+/cmd/lowed/lowed
 
 *.swp
 *.swo
