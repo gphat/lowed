@@ -1,5 +1,11 @@
 `lowed` is a small service for generating a never-ending stream of random metric samples for a configured list of service names and metric types. It specifically generates [DogStatsD](http://docs.datadoghq.com/guides/dogstatsd/#datagram-format) metrics suitable for consumption by [Veneur](https://github.com/stripe/veneur).
 
+It generates an instance of each `metrics` for each of the configured `services` every `delay`. Non-counter metrics support a `range` with a `max` and `min`, from which a random value will be generated.
+
+# TODO
+
+Tags!
+
 # Usage
 
 ```
