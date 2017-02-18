@@ -1,6 +1,25 @@
 {
 	"comment": "",
 	"ignore": "test",
-	"package": [],
-	"rootPath": "veneur-generator"
+	"package": [
+		{
+			"checksumSHA1": "H81ychKdf/QaBpBVEt2RN7qYg6Q=",
+			"path": "github.com/DataDog/datadog-go/statsd",
+			"revision": "6fa3e39b86f8cbb638a971f2a90b9ebd98074c6b",
+			"revisionTime": "2017-01-25T16:43:18Z"
+		},
+		{
+			"checksumSHA1": "XFl7nlkh1EUa3RvYEsT8Q4O1Mvc=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "7f4b1adc791766938c29457bed0703fb9134421a",
+			"revisionTime": "2017-02-15T16:43:24Z"
+		},
+		{
+			"checksumSHA1": "C9GR5oEbZP5kMDBeEzeZNsCmnlQ=",
+			"path": "github.com/go-yaml/yaml",
+			"revision": "a3f3340b5840cee44f372bddb5880fcbc419b46a",
+			"revisionTime": "2017-02-08T14:18:51Z"
+		}
+	],
+	"rootPath": "lowed"
 }

@@ -1,3 +1,4 @@
+stats_address: 127.0.0.1:8200
 services:
   - stallion_srv
   - okapi_srv

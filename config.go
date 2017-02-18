@@ -31,5 +31,6 @@ type Config struct {
 			} `yaml:"range"`
 		} `yaml:"timers"`
 	} `yaml:"metrics"`
-	Services []string `yaml:"services"`
+	Services     []string `yaml:"services"`
+	StatsAddress string   `yaml:"stats_address"`
 }

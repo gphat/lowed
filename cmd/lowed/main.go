@@ -8,6 +8,7 @@ import (
 
 	"lowed"
 
+	"github.com/DataDog/datadog-go/statsd"
 	"github.com/Sirupsen/logrus"
 	"github.com/go-yaml/yaml"
 )
@@ -28,6 +29,12 @@ func main() {
 		logrus.WithError(err).Fatal("Unable to read config file")
 	}
 	fmt.Println(config)
+
+	c, err := statsd.New(config.StatsAddress)
+	if err != nil {
+		logrus.WithError(err).Fatal("Unable to create stats client")
+	}
+	fmt.Println(c)
 }
 
 // ReadConfig attempts to read a config file and unmarshal it's YAML
