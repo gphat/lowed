@@ -1,13 +1,10 @@
 package lowed
 
 type Config struct {
+	Delay   string `yaml:"delay"`
 	Metrics struct {
 		Counters []struct {
-			Name  string `yaml:"name"`
-			Range struct {
-				Max int `yaml:"max"`
-				Min int `yaml:"min"`
-			} `yaml:"range"`
+			Name string `yaml:"name"`
 		} `yaml:"counters"`
 		Gauges []struct {
 			Name  string `yaml:"name"`

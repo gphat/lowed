@@ -1,3 +1,4 @@
+delay: "100ms"
 stats_address: 127.0.0.1:8200
 services:
   - stallion_srv
@@ -9,13 +10,7 @@ services:
 metrics:
   counters:
     - name: request_errors_total
-      range:
-        min: 1
-        max: 1
     - name: request_successes_total
-      range:
-        min: 1
-        max: 1
   timers:
     - name: request_duration_ms
       range:
