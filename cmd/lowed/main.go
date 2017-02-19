@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"lowed"
+	"github.com/gphat/lowed"
 
 	"github.com/DataDog/datadog-go/statsd"
 	"github.com/Sirupsen/logrus"
