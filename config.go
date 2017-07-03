@@ -20,6 +20,10 @@ type Config struct {
 				Min int `yaml:"min"`
 			} `yaml:"range"`
 		} `yaml:"histograms"`
+		Sets []struct {
+			Name         string `yaml:"name"`
+			UniqueValues int    `yaml:"unique_values"`
+		} `yaml:"sets"`
 		Timers []struct {
 			Name  string `yaml:"name"`
 			Range struct {

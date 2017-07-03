@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gphat/lowed"
@@ -95,6 +96,11 @@ func emitMetric(c lowed.Config, client *statsd.Client) {
 		for _, gauge := range c.Metrics.Gauges {
 			client.Gauge(
 				fmt.Sprintf("%s.%s", service, gauge.Name), float64(rando.Intn(gauge.Range.Max-gauge.Range.Min)+gauge.Range.Min), nil, 1.0,
+			)
+		}
+		for _, set := range c.Metrics.Sets {
+			client.Set(
+				fmt.Sprintf("%s.%s", service, set.Name), strconv.Itoa(rando.Intn(set.UniqueValues)), nil, 1.0,
 			)
 		}
 	}

@@ -26,3 +26,6 @@ metrics:
       range:
         min: 1
         max: 20
+  sets:
+     - name: users_seen
+       unique_values: 100
