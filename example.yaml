@@ -1,5 +1,6 @@
 delay: "100ms"
-stats_address: 127.0.0.1:8200
+protocol: "ssf"
+stats_address: 127.0.0.1:8128
 services:
   - stallion_srv
   - okapi_srv

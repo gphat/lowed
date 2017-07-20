@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/gphat/lowed"
+	"github.com/gphat/lowed/ssf"
 
 	"github.com/DataDog/datadog-go/statsd"
 	"github.com/Sirupsen/logrus"
@@ -34,21 +37,38 @@ func main() {
 		logrus.WithError(err).Fatal("Unable to read config file")
 	}
 
-	c, err := statsd.New(config.StatsAddress)
-	if err != nil {
-		logrus.WithError(err).Fatal("Unable to create stats client")
-	}
-
 	delay, err := time.ParseDuration(config.Delay)
 	if err != nil {
 		logrus.WithError(err).Fatal("Cannot parse delay from config file")
 	}
 	logrus.WithField("delay", delay).Info("Starting generation, vroom vroom!")
 
+	var emitter func(c lowed.Config)
+
+	if config.Protocol == "dogstatsd" {
+		statsClient, err := statsd.New(config.StatsAddress)
+		if err != nil {
+			logrus.WithError(err).Fatal("Unable to create stats client")
+		}
+		emitter = func(c lowed.Config) {
+			emitDDMetric(config, statsClient)
+		}
+	} else if config.Protocol == "ssf" {
+		conn, err := net.Dial("udp", config.StatsAddress)
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not connect to SSF address")
+		}
+		emitter = func(c lowed.Config) {
+			emitSSFMetric(c, conn)
+		}
+	} else {
+		logrus.WithField("protocol", config.Protocol).Fatal("Unknown protocol")
+	}
+
 	ticker := time.NewTicker(delay)
 	go func() {
 		for _ = range ticker.C {
-			emitMetric(config, c)
+			emitter(config)
 		}
 	}()
 
@@ -76,7 +96,7 @@ func ReadConfig(path string) (c lowed.Config, err error) {
 	return c, nil
 }
 
-func emitMetric(c lowed.Config, client *statsd.Client) {
+func emitDDMetric(c lowed.Config, client *statsd.Client) {
 	for _, service := range c.Services {
 		for _, counter := range c.Metrics.Counters {
 			client.Count(
@@ -102,6 +122,75 @@ func emitMetric(c lowed.Config, client *statsd.Client) {
 			client.Set(
 				fmt.Sprintf("%s.%s", service, set.Name), strconv.Itoa(rando.Intn(set.UniqueValues)), nil, 1.0,
 			)
+		}
+	}
+}
+
+func emitSSFMetric(c lowed.Config, conn net.Conn) {
+	for _, service := range c.Services {
+		for _, counter := range c.Metrics.Counters {
+			s := ssf.SSFSample{
+				Name:   fmt.Sprintf("%s.%s", service, counter.Name),
+				Value:  1,
+				Metric: ssf.SSFSample_COUNTER,
+			}
+			sp := ssf.SSFSpan{
+				Metrics: []*ssf.SSFSample{&s},
+			}
+			d, _ := proto.Marshal(&sp)
+			conn.Write(d)
+		}
+
+		for _, timer := range c.Metrics.Timers {
+			s := ssf.SSFSample{
+				Name:   fmt.Sprintf("%s.%s", service, timer.Name),
+				Value:  float32(rando.Intn(timer.Range.Max-timer.Range.Min) + timer.Range.Min),
+				Metric: ssf.SSFSample_HISTOGRAM,
+			}
+			sp := ssf.SSFSpan{
+				Metrics: []*ssf.SSFSample{&s},
+			}
+			d, _ := proto.Marshal(&sp)
+			conn.Write(d)
+		}
+
+		for _, histo := range c.Metrics.Timers {
+			s := ssf.SSFSample{
+				Name:   fmt.Sprintf("%s.%s", service, histo.Name),
+				Value:  float32(rando.Intn(histo.Range.Max-histo.Range.Min) + histo.Range.Min),
+				Metric: ssf.SSFSample_HISTOGRAM,
+			}
+			sp := ssf.SSFSpan{
+				Metrics: []*ssf.SSFSample{&s},
+			}
+			d, _ := proto.Marshal(&sp)
+			conn.Write(d)
+		}
+
+		for _, gauge := range c.Metrics.Gauges {
+			s := ssf.SSFSample{
+				Name:   fmt.Sprintf("%s.%s", service, gauge.Name),
+				Value:  float32(rando.Intn(gauge.Range.Max-gauge.Range.Min) + gauge.Range.Min),
+				Metric: ssf.SSFSample_GAUGE,
+			}
+			sp := ssf.SSFSpan{
+				Metrics: []*ssf.SSFSample{&s},
+			}
+			d, _ := proto.Marshal(&sp)
+			conn.Write(d)
+		}
+
+		for _, set := range c.Metrics.Sets {
+			s := ssf.SSFSample{
+				Name:    fmt.Sprintf("%s.%s", service, set.Name),
+				Message: strconv.Itoa(rando.Intn(set.UniqueValues)),
+				Metric:  ssf.SSFSample_SET,
+			}
+			sp := ssf.SSFSpan{
+				Metrics: []*ssf.SSFSample{&s},
+			}
+			d, _ := proto.Marshal(&sp)
+			conn.Write(d)
 		}
 	}
 }
