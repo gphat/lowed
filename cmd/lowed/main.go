@@ -41,7 +41,11 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Cannot parse delay from config file")
 	}
-	logrus.WithField("delay", delay).Info("Starting generation, vroom vroom!")
+	logrus.WithFields(logrus.Fields{
+		"delay":     delay,
+		"target":    config.StatsAddress,
+		"protocolr": config.Protocol,
+	}).Info("Starting generation, vroom vroom!")
 
 	var emitter func(c lowed.Config)
 
@@ -127,68 +131,79 @@ func emitDDMetric(c lowed.Config, client *statsd.Client) {
 }
 
 func emitSSFMetric(c lowed.Config, conn net.Conn) {
+	traceID := rand.Int63()
+	var lastID int64
+	var startTime = time.Now().UTC()
+
 	for _, service := range c.Services {
-		for _, counter := range c.Metrics.Counters {
-			s := ssf.SSFSample{
-				Name:   fmt.Sprintf("%s.%s", service, counter.Name),
-				Value:  1,
-				Metric: ssf.SSFSample_COUNTER,
-			}
-			sp := ssf.SSFSpan{
-				Metrics: []*ssf.SSFSample{&s},
-			}
-			d, _ := proto.Marshal(&sp)
-			conn.Write(d)
-		}
 
 		for _, timer := range c.Metrics.Timers {
-			s := ssf.SSFSample{
-				Name:   fmt.Sprintf("%s.%s", service, timer.Name),
-				Value:  float32(rando.Intn(timer.Range.Max-timer.Range.Min) + timer.Range.Min),
-				Metric: ssf.SSFSample_HISTOGRAM,
-			}
-			sp := ssf.SSFSpan{
-				Metrics: []*ssf.SSFSample{&s},
-			}
-			d, _ := proto.Marshal(&sp)
-			conn.Write(d)
-		}
 
-		for _, histo := range c.Metrics.Timers {
-			s := ssf.SSFSample{
-				Name:   fmt.Sprintf("%s.%s", service, histo.Name),
-				Value:  float32(rando.Intn(histo.Range.Max-histo.Range.Min) + histo.Range.Min),
-				Metric: ssf.SSFSample_HISTOGRAM,
-			}
-			sp := ssf.SSFSpan{
-				Metrics: []*ssf.SSFSample{&s},
-			}
-			d, _ := proto.Marshal(&sp)
-			conn.Write(d)
-		}
+			var metrics []*ssf.SSFSample
 
-		for _, gauge := range c.Metrics.Gauges {
-			s := ssf.SSFSample{
-				Name:   fmt.Sprintf("%s.%s", service, gauge.Name),
-				Value:  float32(rando.Intn(gauge.Range.Max-gauge.Range.Min) + gauge.Range.Min),
-				Metric: ssf.SSFSample_GAUGE,
+			for _, counter := range c.Metrics.Counters {
+				metrics = append(metrics, &ssf.SSFSample{
+					Name:       fmt.Sprintf("%s.%s", service, counter.Name),
+					Value:      1,
+					Metric:     ssf.SSFSample_COUNTER,
+					Timestamp:  startTime.UnixNano(),
+					SampleRate: 1.0,
+				})
 			}
-			sp := ssf.SSFSpan{
-				Metrics: []*ssf.SSFSample{&s},
-			}
-			d, _ := proto.Marshal(&sp)
-			conn.Write(d)
-		}
 
-		for _, set := range c.Metrics.Sets {
-			s := ssf.SSFSample{
-				Name:    fmt.Sprintf("%s.%s", service, set.Name),
-				Message: strconv.Itoa(rando.Intn(set.UniqueValues)),
-				Metric:  ssf.SSFSample_SET,
+			for _, histo := range c.Metrics.Histograms {
+				metrics = append(metrics, &ssf.SSFSample{
+					Name:       fmt.Sprintf("%s.%s", service, histo.Name),
+					Value:      float32(rando.Intn(histo.Range.Max-histo.Range.Min) + histo.Range.Min),
+					Metric:     ssf.SSFSample_HISTOGRAM,
+					Timestamp:  startTime.UnixNano(),
+					SampleRate: 1.0,
+				})
 			}
+
+			for _, gauge := range c.Metrics.Gauges {
+				metrics = append(metrics, &ssf.SSFSample{
+					Name:       fmt.Sprintf("%s.%s", service, gauge.Name),
+					Value:      float32(rando.Intn(gauge.Range.Max-gauge.Range.Min) + gauge.Range.Min),
+					Metric:     ssf.SSFSample_GAUGE,
+					Timestamp:  startTime.UnixNano(),
+					SampleRate: 1.0,
+				})
+			}
+
+			// for _, set := range c.Metrics.Sets {
+			// 	s := ssf.SSFSample{
+			// 		Name:    fmt.Sprintf("%s.%s", service, set.Name),
+			// 		Message: strconv.Itoa(rando.Intn(set.UniqueValues)),
+			// 		Metric:  ssf.SSFSample_SET,
+			// 	}
+			// }
+
+			dur := time.Duration(rando.Intn(timer.Range.Max-timer.Range.Min) + timer.Range.Min)
+			var e = false
+			if rand.Float64() <= c.ErrorChance {
+				e = true
+			}
+
+			newID := rand.Int63()
 			sp := ssf.SSFSpan{
-				Metrics: []*ssf.SSFSample{&s},
+				Id:             newID,
+				TraceId:        traceID,
+				ParentId:       lastID,
+				Service:        service,
+				StartTimestamp: startTime.UnixNano(),
+				EndTimestamp:   startTime.Add(time.Millisecond * dur).UnixNano(),
+				Operation:      fmt.Sprintf("%s.%s", service, timer.Name),
+				Error:          e,
+				Metrics:        metrics,
+				Tags: map[string]string{
+					"name":     "name",
+					"resource": "resource",
+				},
 			}
+			lastID = newID
+
+			startTime = startTime.Add(time.Millisecond * dur)
 			d, _ := proto.Marshal(&sp)
 			conn.Write(d)
 		}

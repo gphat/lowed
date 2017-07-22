@@ -1,5 +1,7 @@
-delay: "100ms"
+delay: "1000ms"
+#protocol: "dogstatsd"
 protocol: "ssf"
+# Be sure and change your port if talking a different protocol!
 stats_address: 127.0.0.1:8128
 services:
   - stallion_srv
@@ -8,6 +10,7 @@ services:
   - wombat_srv
   - warthog_srv
   - burro_srv
+error_chance: .1
 metrics:
   counters:
     - name: request_errors_total

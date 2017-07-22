@@ -1,10 +1,12 @@
-`lowed` is a small service for generating a never-ending stream of random metric samples for a configured list of service names and metric types. It specifically generates [DogStatsD](http://docs.datadoghq.com/guides/dogstatsd/#datagram-format) metrics suitable for consumption by [Veneur](https://github.com/stripe/veneur).
+`lowed` is a small service for generating a never-ending stream of random metric samples for a configured list of service names and metric types. It specifically generates [DogStatsD](http://docs.datadoghq.com/guides/dogstatsd/#datagram-format) metrics or [SSF](https://github.com/gphat/veneur/tree/master/ssf) spans suitable for consumption by [Veneur](https://github.com/stripe/veneur).
 
-It generates an instance of each `metrics` for each of the configured `services` every `delay`. Non-counter metrics support a `range` with a `max` and `min`, from which a random value will be generated.
+# DogStatsD
 
-# TODO
+Lowed generates an instance of each `metrics` for each of the configured `services` every `delay`. Non-counter metrics support a `range` with a `max` and `min`, from which a random value will be generated.
 
-Tags!
+# SSF
+
+Lowed generates a span for each `services` with a duration of `delay`. Metrics are identical to those for DogStatsD but are attached to the span.
 
 # Usage
 
@@ -17,6 +19,7 @@ Tags!
 ```yaml
 delay: "100ms"
 stats_address: 127.0.0.1:8200
+error_chance: .1
 services:
   - stallion_srv
   - okapi_srv

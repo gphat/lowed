@@ -1,8 +1,9 @@
 package lowed
 
 type Config struct {
-	Delay   string `yaml:"delay"`
-	Metrics struct {
+	Delay       string  `yaml:"delay"`
+	ErrorChance float64 `yaml:"error_chance"`
+	Metrics     struct {
 		Counters []struct {
 			Name string `yaml:"name"`
 		} `yaml:"counters"`
