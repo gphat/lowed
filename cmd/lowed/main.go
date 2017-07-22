@@ -143,7 +143,7 @@ func emitSSFMetric(c lowed.Config, conn net.Conn) {
 
 			for _, counter := range c.Metrics.Counters {
 				metrics = append(metrics, &ssf.SSFSample{
-					Name:       fmt.Sprintf("%s.%s", service, counter.Name),
+					Name:       counter.Name,
 					Value:      1,
 					Metric:     ssf.SSFSample_COUNTER,
 					Timestamp:  startTime.UnixNano(),
@@ -153,7 +153,7 @@ func emitSSFMetric(c lowed.Config, conn net.Conn) {
 
 			for _, histo := range c.Metrics.Histograms {
 				metrics = append(metrics, &ssf.SSFSample{
-					Name:       fmt.Sprintf("%s.%s", service, histo.Name),
+					Name:       histo.Name,
 					Value:      float32(rando.Intn(histo.Range.Max-histo.Range.Min) + histo.Range.Min),
 					Metric:     ssf.SSFSample_HISTOGRAM,
 					Timestamp:  startTime.UnixNano(),
@@ -163,7 +163,7 @@ func emitSSFMetric(c lowed.Config, conn net.Conn) {
 
 			for _, gauge := range c.Metrics.Gauges {
 				metrics = append(metrics, &ssf.SSFSample{
-					Name:       fmt.Sprintf("%s.%s", service, gauge.Name),
+					Name:       gauge.Name,
 					Value:      float32(rando.Intn(gauge.Range.Max-gauge.Range.Min) + gauge.Range.Min),
 					Metric:     ssf.SSFSample_GAUGE,
 					Timestamp:  startTime.UnixNano(),
@@ -197,7 +197,7 @@ func emitSSFMetric(c lowed.Config, conn net.Conn) {
 				Error:          e,
 				Metrics:        metrics,
 				Tags: map[string]string{
-					"name":     "name",
+					"name":     timer.Name,
 					"resource": "resource",
 				},
 			}
