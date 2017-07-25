@@ -50,4 +50,4 @@ metrics:
 
 # Name
 
-Lowed is named for [Paddy Lowe], codesigner of the [Mercedes F1 W05 Hybrid](https://en.wikipedia.org/wiki/Mercedes_F1_W05_Hybrid). Since `lowed` is an engine for generating metrics, it made sense to choose someone who designed and engine! Also, it is a clever homonym of "load", since the generated metrics may provide load testing fodder.
+Lowed is named for [Paddy Lowe], codesigner of the [Mercedes F1 W05 Hybrid](https://en.wikipedia.org/wiki/Mercedes_F1_W05_Hybrid). Since `lowed` is an engine for generating metrics, it made sense to choose someone who designed an engine! Also, it is a clever homonym of "load", since the generated metrics may provide load testing fodder.
